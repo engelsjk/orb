@@ -147,6 +147,10 @@ func TestGeometryUnmarshal(t *testing.T) {
 				t.Errorf("unmarshal error: %v", err)
 			}
 
+			if g.Type != tc.geom.GeoJSONType() {
+				t.Errorf("incorrenct type: %v != %v", g.Type, tc.geom.GeoJSONType())
+			}
+
 			if !orb.Equal(g.Geometry(), tc.geom) {
 				t.Errorf("incorrect geometry")
 				t.Logf("%[1]T, %[1]v", g.Geometry())
@@ -178,6 +182,16 @@ func TestGeometryUnmarshal(t *testing.T) {
 	err = g.UnmarshalJSON([]byte(`{"type": "arc",`)) // truncated
 	if err == nil {
 		t.Errorf("should return error for invalid json")
+	}
+
+	// invalid type (null)
+	_, err = UnmarshalGeometry([]byte(`null`))
+	if err == nil {
+		t.Errorf("should return error for invalid type")
+	}
+
+	if !strings.Contains(err.Error(), "invalid geometry") {
+		t.Errorf("incorrect error: %v", err)
 	}
 }
 
